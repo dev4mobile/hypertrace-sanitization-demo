@@ -1,0 +1,135 @@
+services:
+  # Jaeger - 分布式追踪系统
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    ports:
+      - "16686:16686"
+      - "14268:14268"
+      - "4317:4317" # OTLP gRPC receiver
+      - "4318:4318" # OTLP HTTP receiver
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+    networks:
+      - hypertrace-network
+
+  # Prometheus - 监控指标收集
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+      - hypertrace-network
+
+  # Grafana - 可视化仪表板
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana-storage:/var/lib/grafana
+    networks:
+      - hypertrace-network
+
+  # Zookeeper - Kafka 协调服务
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.4.0
+    hostname: zookeeper
+    container_name: zookeeper
+    ports:
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    networks:
+      - hypertrace-network
+
+  # Kafka - 消息代理
+  kafka:
+    image: confluentinc/cp-kafka:7.4.4
+    hostname: kafka
+    container_name: kafka
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+      - "19092:19092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:29092,PLAINTEXT_HOST://0.0.0.0:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_JMX_PORT: 19092
+      KAFKA_JMX_HOSTNAME: localhost
+      # 启用 JMX 监控 (暂时禁用)
+      # KAFKA_OPTS: "-javaagent:${JMX_AGENT_PATH:-/tmp/jmx_prometheus_javaagent.jar}=${JMX_AGENT_PORT:-8080}:${JMX_AGENT_CONFIG:-/tmp/kafka-2_0_0.yml}"
+    volumes:
+      - kafka-data:/var/lib/kafka/data
+      # - ./agents/jmx_prometheus_javaagent.jar:/tmp/jmx_prometheus_javaagent.jar
+      # - ./agents/kafka-2_0_0.yml:/tmp/kafka-2_0_0.yml
+    networks:
+      - hypertrace-network
+
+  # # Kafka UI - Web 管理界面
+  # kafka-ui:
+  #   image: provectuslabs/kafka-ui:latest
+  #   container_name: kafka-ui
+  #   depends_on:
+  #     - kafka
+  #   ports:
+  #     - "8088:8080"
+  #   environment:
+  #     KAFKA_CLUSTERS_0_NAME: local
+  #     KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:29092
+  #     KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181
+  #   networks:
+  #     - hypertrace-network
+
+  # Postgres - 关系型数据库
+  postgres:
+    image: postgres:15-alpine
+    container_name: postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: hypertrace
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - hypertrace-network
+  # hypertrace-demo-app:
+  #   build: .
+  #   ports:
+  #     - "8080:8080"
+  #   depends_on:
+  #     - postgres
+  #     - kafka
+  #   environment:
+  #     - OTEL_SERVICE_NAME=hypertrace-demo-app
+  #     - OTEL_EXPORTER_OTLP_TRACES_ENDPOINT=http://hypertrace-otel-collector:4317
+  #     - OTEL_METRICS_EXPORTER=none
+  #     - JAVA_TOOL_OPTIONS=-javaagent:/agent/hypertrace-agent.jar
+  #     - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/hypertrace
+  #     - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+  #   volumes:
+  #     - ./agent:/agent
+
+volumes:
+  grafana-storage:
+  kafka-data:
+  postgres-data:
+
+
+networks:
+  hypertrace-network:
+    driver: bridge
