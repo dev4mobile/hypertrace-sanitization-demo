@@ -8,7 +8,7 @@ set -e
 echo "=== Hypertrace Demo 一键安装脚本 ==="
 
 # 配置变量
-PROJECT_NAME="hypertrace-demo"
+PROJECT_NAME="hypertrace-sanitization-demo"
 REQUIRED_PORTS=(8080 16686 9092 2181 5432 3000 3001 55432)
 COMPOSE_CMD=""
 
@@ -345,7 +345,7 @@ show_access_info() {
     echo "   $COMPOSE_CMD logs -f"
     echo ""
     echo "   # 查看应用日志"
-    echo "   $COMPOSE_CMD logs -f hypertrace-demo-app"
+    echo "   $COMPOSE_CMD logs -f hypertrace-sanitization-demo-app"
     echo ""
     echo "   # 重启服务"
     echo "   $COMPOSE_CMD restart"
@@ -402,7 +402,7 @@ uninstall() {
     $COMPOSE_CMD down -v --remove-orphans
     
     log_info "删除相关镜像..."
-    docker images | grep hypertrace-demo | awk '{print $3}' | xargs -r docker rmi -f 2>/dev/null || true
+    docker images | grep hypertrace-sanitization-demo | awk '{print $3}' | xargs -r docker rmi -f 2>/dev/null || true
     
     log_info "清理未使用的 Docker 资源..."
     docker system prune -f

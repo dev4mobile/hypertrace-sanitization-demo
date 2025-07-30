@@ -3,7 +3,7 @@ server:
 
 spring:
   application:
-    name: hypertrace-demo
+    name: hypertrace-sanitization-demo
 
   datasource:
     url: jdbc:postgresql://localhost:5432/hypertrace

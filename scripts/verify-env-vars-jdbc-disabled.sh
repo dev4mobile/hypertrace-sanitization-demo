@@ -4,7 +4,7 @@ echo "=== 验证环境变量方式禁用 JDBC 数据采集 ==="
 echo ""
 
 echo "1. 检查 JVM 参数配置..."
-jvm_params=$(docker exec hypertrace-demo-app ps aux | grep java)
+jvm_params=$(docker exec hypertrace-sanitization-demo-app ps aux | grep java)
 echo "JVM 参数:"
 echo "$jvm_params"
 echo ""
@@ -24,7 +24,7 @@ fi
 echo ""
 
 echo "2. 检查环境变量配置..."
-env_vars=$(docker exec hypertrace-demo-app env | grep -E "OTEL_INSTRUMENTATION_(JDBC|JPA|HIBERNATE|HIKARICP|JDBC_DATASOURCE)_ENABLED")
+env_vars=$(docker exec hypertrace-sanitization-demo-app env | grep -E "OTEL_INSTRUMENTATION_(JDBC|JPA|HIBERNATE|HIKARICP|JDBC_DATASOURCE)_ENABLED")
 if [ -n "$env_vars" ]; then
     echo "数据库 instrumentation 环境变量:"
     echo "$env_vars"
@@ -81,7 +81,7 @@ sleep 5
 echo ""
 
 echo "5. 检查应用日志中的数据库操作..."
-hibernate_logs=$(docker-compose logs --tail=20 hypertrace-demo-app | grep -i "hibernate:")
+hibernate_logs=$(docker-compose logs --tail=20 hypertrace-sanitization-demo-app | grep -i "hibernate:")
 if [ -n "$hibernate_logs" ]; then
     echo "✅ 发现 Hibernate SQL 日志（应用层面，正常）:"
     echo "$hibernate_logs"
@@ -92,7 +92,7 @@ fi
 echo ""
 
 echo "6. 检查是否有数据库相关 span 的日志..."
-span_logs=$(docker-compose logs hypertrace-demo-app | grep -i "jdbc.*span\|database.*span\|sql.*span\|hikari.*span\|datasource.*span\|getConnection")
+span_logs=$(docker-compose logs hypertrace-sanitization-demo-app | grep -i "jdbc.*span\|database.*span\|sql.*span\|hikari.*span\|datasource.*span\|getConnection")
 if [ -n "$span_logs" ]; then
     echo "❌ 发现数据库相关 span 日志:"
     echo "$span_logs"

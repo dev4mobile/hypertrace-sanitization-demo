@@ -25,7 +25,7 @@ if [ -f "package.sh" ]; then
     echo -e "${YELLOW}📦 package.sh${NC} - 一键打包脚本"
     echo "   功能: 构建应用、下载依赖、创建分发包"
     echo "   用法: ./package.sh"
-    echo "   输出: dist/hypertrace-demo-1.0.0.tar.gz"
+    echo "   输出: dist/hypertrace-sanitization-demo-1.0.0.tar.gz"
     echo ""
 fi
 

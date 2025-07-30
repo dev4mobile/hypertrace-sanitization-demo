@@ -24,7 +24,7 @@
 ## 项目结构
 
 ```
-hypertrace-demo/
+hypertrace-sanitization-demo/
 ├── src/main/java/com/example/hypertracedemo/
 │   ├── HypertraceApplication.java          # 主应用类
 │   ├── controller/UserController.java      # REST API 控制器
@@ -391,7 +391,7 @@ export OTEL_LOG_LEVEL=debug
 # 启用 Agent 调试
 java -javaagent:agents/hypertrace-agent.jar \
      -Dotel.javaagent.debug=true \
-     -jar build/libs/hypertrace-demo-0.0.1-SNAPSHOT.jar
+     -jar build/libs/hypertrace-sanitization-demo-0.0.1-SNAPSHOT.jar
 ```
 
 ## 扩展功能
@@ -485,7 +485,7 @@ spring:
 4.  **在 Jaeger 中观测追踪数据**
 
     - 打开 Jaeger UI：[http://localhost:16686](http://localhost:16686)
-    - 在服务列表中选择 `hypertrace-demo-app`。
+    - 在服务列表中选择 `hypertrace-sanitization-demo-app`。
     - 点击 "Find Traces"。
     - 你应该能看到一条名为 `POST /api/users/{id}/notify` 的新追踪记录。
 

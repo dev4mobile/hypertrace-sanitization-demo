@@ -225,10 +225,10 @@ services:
           memory: 256M
           cpus: "0.25"
 
-  # Spring Boot 应用 - Hypertrace Demo
-  hypertrace-demo-app:
+  # Spring Boot 应用 - Hypertrace Sanitization Demo
+  hypertrace-sanitization-demo-app:
     build: .
-    container_name: hypertrace-demo-app
+    container_name: hypertrace-sanitization-demo-app
     ports:
       - "10020:8080"
     depends_on:
@@ -236,7 +236,7 @@ services:
       - kafka
       - jaeger
       - sanitization-backend
-    hostname: hypertrace-demo-app
+    hostname: hypertrace-sanitization-demo-app
     environment:
       # Spring Boot 配置
       - SPRING_PROFILES_ACTIVE=docker
@@ -251,7 +251,7 @@ services:
       - JAVA_OPTS=-javaagent:/opt/hypertrace/hypertrace-agent-1.3.25.jar -Dotel.instrumentation.kafka.enabled=true -Dotel.instrumentation.kafka.capture-message-key=true
 
       # OpenTelemetry 配置
-      - OTEL_SERVICE_NAME=hypertrace-demo-app
+      - OTEL_SERVICE_NAME=hypertrace-sanitization-demo-app
       - OTEL_EXPORTER_OTLP_TRACES_ENDPOINT=http://jaeger:4317
       - OTEL_EXPORTER_OTLP_HEADERS=authorization=5edae162-cec0-4950-8151-75b170d7c0a8
       - OTEL_METRICS_EXPORTER=none

@@ -6,13 +6,13 @@
 set -e
 
 # 配置变量
-PROJECT_NAME="hypertrace-demo"
+PROJECT_NAME="hypertrace-sanitization-demo"
 VERSION="1.0.0"
 PACKAGE_DIR="dist"
 PACKAGE_NAME="${PROJECT_NAME}-${VERSION}"
 ARCHIVE_NAME="${PACKAGE_NAME}.tar.gz"
 
-echo "=== Hypertrace Demo 一键打包脚本 ==="
+echo "=== Hypertrace Sanitization Demo 一键打包脚本 ==="
 echo "项目名称: ${PROJECT_NAME}"
 echo "版本: ${VERSION}"
 echo "打包目录: ${PACKAGE_DIR}"
@@ -66,8 +66,8 @@ done
 
 # 构建本地应用镜像并保存
 echo "构建并保存应用镜像..."
-docker build -t hypertrace-demo-app:latest .
-docker save hypertrace-demo-app:latest -o "${PACKAGE_DIR}/${PACKAGE_NAME}/docker-images/hypertrace-demo-app_latest.tar"
+docker build -t hypertrace-sanitization-demo-app:latest .
+docker save hypertrace-sanitization-demo-app:latest -o "${PACKAGE_DIR}/${PACKAGE_NAME}/docker-images/hypertrace-sanitization-demo-app_latest.tar"
 
 # 构建脱敏配置服务镜像
 if [ -d "sanitization-config-service" ]; then
@@ -93,7 +93,7 @@ cat > "${PACKAGE_DIR}/${PACKAGE_NAME}/docker-images/images.txt" << EOF
 jaegertracing/all-in-one:latest -> jaegertracing_all-in-one_latest.tar
 confluentinc/cp-kafka:7.6.0 -> confluentinc_cp-kafka_7.6.0.tar
 postgres:16-alpine -> postgres_16-alpine.tar
-hypertrace-demo-app:latest -> hypertrace-demo-app_latest.tar
+hypertrace-sanitization-demo-app:latest -> hypertrace-sanitization-demo-app_latest.tar
 sanitization-backend:latest -> sanitization-backend_latest.tar
 sanitization-frontend:latest -> sanitization-frontend_latest.tar
 
@@ -108,8 +108,8 @@ cp docker-compose.yml "${PACKAGE_DIR}/${PACKAGE_NAME}/"
 # 修改 docker-compose.yml，将所有 build 配置替换为 image 配置
 echo "修改 docker-compose.yml 配置..."
 
-# 替换 hypertrace-demo-app 的 build 配置
-sed -i.bak 's/build: \./image: hypertrace-demo-app:latest/' "${PACKAGE_DIR}/${PACKAGE_NAME}/docker-compose.yml"
+# 替换 hypertrace-sanitization-demo-app 的 build 配置
+sed -i.bak 's/build: \./image: hypertrace-sanitization-demo-app:latest/' "${PACKAGE_DIR}/${PACKAGE_NAME}/docker-compose.yml"
 
 # 替换 sanitization-backend 的 build 配置
 sed -i.bak '/sanitization-backend:/,/container_name:/ {
@@ -129,6 +129,9 @@ sed -i.bak '/sanitization-frontend:/,/container_name:/ {
     }
 }' "${PACKAGE_DIR}/${PACKAGE_NAME}/docker-compose.yml"
 
+# 替换数据库初始化脚本路径
+sed -i.bak 's|./sanitization-config-service/database/init-docker.sql|./database/init-docker.sql|g' "${PACKAGE_DIR}/${PACKAGE_NAME}/docker-compose.yml"
+
 # 清理备份文件
 rm -f "${PACKAGE_DIR}/${PACKAGE_NAME}/docker-compose.yml.bak"
 
@@ -139,10 +142,15 @@ if [ -d "agents" ]; then
     cp -r agents "${PACKAGE_DIR}/${PACKAGE_NAME}/"
 fi
 
-# 复制 sanitization-config-service 目录（如果存在）
-if [ -d "sanitization-config-service" ]; then
-    cp -r sanitization-config-service "${PACKAGE_DIR}/${PACKAGE_NAME}/"
+# 复制数据库初始化脚本（脱敏配置服务需要）
+if [ -f "sanitization-config-service/database/init-docker.sql" ]; then
+    echo "复制数据库初始化脚本..."
+    mkdir -p "${PACKAGE_DIR}/${PACKAGE_NAME}/database"
+    cp sanitization-config-service/database/init-docker.sql "${PACKAGE_DIR}/${PACKAGE_NAME}/database/"
 fi
+
+# 注意: sanitization-config-service 的源代码不应该包含在分发包中
+# 只需要 Docker 镜像和数据库初始化脚本即可运行服务
 
 # 创建安装脚本
 cat > "${PACKAGE_DIR}/${PACKAGE_NAME}/install.sh" << 'EOF'
@@ -153,7 +161,7 @@ cat > "${PACKAGE_DIR}/${PACKAGE_NAME}/install.sh" << 'EOF'
 
 set -e
 
-echo "=== Hypertrace Demo 一键安装脚本 ==="
+echo "=== Hypertrace Sanitization Demo 一键安装脚本 ==="
 
 # 检查系统要求
 check_requirements() {
@@ -229,7 +237,7 @@ load_docker_images() {
 
 # 启动服务
 start_services() {
-    echo "启动 Hypertrace Demo 服务..."
+    echo "启动 Hypertrace Sanitization Demo 服务..."
 
     # 使用 docker-compose 或 docker compose
     if command -v docker-compose &> /dev/null; then
@@ -274,7 +282,7 @@ show_access_info() {
     echo ""
     echo "管理命令:"
     echo "  # 查看日志"
-    echo "  docker-compose logs -f hypertrace-demo-app"
+    echo "  docker-compose logs -f hypertrace-sanitization-demo-app"
     echo ""
     echo "  # 停止服务"
     echo "  docker-compose down"
@@ -380,7 +388,7 @@ echo "成功加载: $loaded_count/$total_count 个镜像"
 # 显示已加载的镜像
 echo ""
 echo "已加载的镜像:"
-docker images | grep -E "(jaegertracing|confluentinc|postgres|hypertrace-demo-app)" || echo "未找到相关镜像"
+docker images | grep -E "(jaegertracing|confluentinc|postgres|hypertrace-sanitization-demo-app)" || echo "未找到相关镜像"
 EOF
 
 chmod +x "${PACKAGE_DIR}/${PACKAGE_NAME}/load-images.sh"
@@ -393,10 +401,10 @@ cat > "${PACKAGE_DIR}/${PACKAGE_NAME}/uninstall.sh" << 'EOF'
 
 set -e
 
-echo "=== Hypertrace Demo 卸载脚本 ==="
+echo "=== Hypertrace Sanitization Demo 卸载脚本 ==="
 
 # 确认卸载
-read -p "确定要卸载 Hypertrace Demo 吗? 这将删除所有数据 (y/N): " -n 1 -r
+read -p "确定要卸载 Hypertrace Sanitization Demo 吗? 这将删除所有数据 (y/N): " -n 1 -r
 echo
 if [[ ! $REPLY =~ ^[Yy]$ ]]; then
     echo "卸载已取消"
@@ -413,7 +421,7 @@ fi
 
 # 删除镜像
 echo "删除相关镜像..."
-docker images | grep hypertrace-demo | awk '{print $3}' | xargs -r docker rmi -f
+docker images | grep hypertrace-sanitization-demo | awk '{print $3}' | xargs -r docker rmi -f
 
 # 清理未使用的资源
 echo "清理未使用的 Docker 资源..."
@@ -473,7 +481,7 @@ echo "Docker 镜像:"
 echo "- jaegertracing/all-in-one:latest"
 echo "- confluentinc/cp-kafka:7.6.0 (KRaft 模式)"
 echo "- postgres:16-alpine"
-echo "- hypertrace-demo-app:latest"
+echo "- hypertrace-sanitization-demo-app:latest"
 echo "- sanitization-backend:latest"
 echo "- sanitization-frontend:latest"
 

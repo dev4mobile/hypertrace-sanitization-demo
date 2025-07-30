@@ -22,8 +22,8 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-validation")
 
     // OpenTelemetry API for manual tracing
-    implementation("io.opentelemetry:opentelemetry-api:1.32.0")
-    implementation("io.opentelemetry:opentelemetry-context:1.32.0")
+    // implementation("io.opentelemetry:opentelemetry-api:1.32.0")
+    // implementation("io.opentelemetry:opentelemetry-context:1.32.0")
 
     // H2 只用于测试环境
     testImplementation("com.h2database:h2")

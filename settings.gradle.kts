@@ -1,1 +1,1 @@
-rootProject.name = "hypertrace-demo"
+rootProject.name = "hypertrace-sanitization-demo"

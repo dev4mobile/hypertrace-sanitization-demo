@@ -167,7 +167,7 @@ log_info "测试 Jaeger 追踪数据..."
 sleep 5  # 等待追踪数据传输
 
 JAEGER_API="http://localhost:16686/api/services"
-if curl -s "$JAEGER_API" | grep -q "hypertrace-demo-app"; then
+if curl -s "$JAEGER_API" | grep -q "hypertrace-sanitization-demo-app"; then
     log_success "✓ Jaeger 追踪数据测试"
     PASSED_TESTS=$((PASSED_TESTS + 1))
 else

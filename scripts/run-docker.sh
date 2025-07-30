@@ -44,7 +44,7 @@ fi
 
 # 构建应用镜像
 echo "构建 Hypertrace Demo 应用镜像..."
-docker-compose build hypertrace-demo-app
+docker-compose build hypertrace-sanitization-demo-app
 
 # 启动所有服务
 echo "启动所有服务..."
@@ -71,7 +71,7 @@ echo "测试命令:"
 echo "  curl -X POST http://localhost:8080/api/users/1/notify"
 echo ""
 echo "查看日志:"
-echo "  docker-compose logs -f hypertrace-demo-app"
+echo "  docker-compose logs -f hypertrace-sanitization-demo-app"
 echo ""
 echo "停止服务:"
 echo "  docker-compose down"

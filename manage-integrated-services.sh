@@ -79,7 +79,7 @@ show_logs() {
     case $1 in
         "app")
             echo -e "${BLUE}📋 主应用日志:${NC}"
-            docker-compose logs -f hypertrace-demo-app
+            docker-compose logs -f hypertrace-sanitization-demo-app
             ;;
         "san")
             echo -e "${BLUE}📋 脱敏配置服务日志:${NC}"
@@ -117,7 +117,7 @@ clean_environment() {
 check_health() {
     echo -e "${BLUE}🏥 检查服务健康状态...${NC}"
     
-    services=("hypertrace-demo-app:8080" "sanitization-backend:3001" "sanitization-frontend:3000" "jaeger:16686")
+    services=("hypertrace-sanitization-demo-app:8080" "sanitization-backend:3001" "sanitization-frontend:3000" "jaeger:16686")
     
     for service in "${services[@]}"; do
         IFS=':' read -r name port <<< "$service"
