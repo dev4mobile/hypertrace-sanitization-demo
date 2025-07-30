@@ -269,10 +269,7 @@ Kafka 提供丰富的 JMX 指标，通过 Prometheus 收集：
 - 用户名: `sa`
 - 密码: `password`
 
-### Spring Boot Actuator
-- 健康检查: http://localhost:8080/actuator/health
-- 应用指标: http://localhost:8080/actuator/metrics
-- 应用信息: http://localhost:8080/actuator/info
+
 
 ## Hypertrace 配置
 
@@ -442,7 +439,7 @@ spring:
 
 - [Hypertrace Java Agent GitHub](https://github.com/hypertrace/javaagent)
 - [OpenTelemetry Java 文档](https://opentelemetry.io/docs/instrumentation/java/)
-- [Spring Boot Actuator 文档](https://docs.spring.io/spring-boot/docs/current/reference/html/actuator.html)
+
 - [Jaeger 文档](https://www.jaegertracing.io/docs/)
 - [Prometheus 文档](https://prometheus.io/docs/)
 - [Grafana 文档](https://grafana.com/docs/)

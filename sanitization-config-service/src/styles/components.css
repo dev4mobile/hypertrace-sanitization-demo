@@ -1,0 +1,198 @@
+/* 现代化组件样式 */
+
+/* 卡片基础样式 */
+.card {
+  @apply bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200;
+}
+
+.card-hover {
+  @apply hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200;
+}
+
+/* 按钮样式 */
+.btn {
+  @apply inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 whitespace-nowrap;
+}
+
+.btn-primary {
+  @apply btn bg-primary-600 text-white hover:bg-primary-700 focus:ring-primary-500 shadow-sm hover:shadow-md;
+}
+
+.btn-secondary {
+  @apply btn bg-gray-100 text-gray-700 hover:bg-gray-200 focus:ring-gray-500;
+}
+
+.btn-danger {
+  @apply btn bg-error-600 text-white hover:bg-error-700 focus:ring-error-500 shadow-sm hover:shadow-md;
+}
+
+.btn-ghost {
+  @apply btn text-gray-600 hover:text-gray-900 hover:bg-gray-100 focus:ring-gray-500;
+}
+
+/* 输入框样式 */
+.input {
+  @apply block w-full px-3 py-2 border border-gray-300 rounded-lg text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors duration-200;
+}
+
+.input-search {
+  @apply input pr-4 bg-gray-50 border-gray-200 focus:bg-white;
+  min-width: 300px;
+}
+
+/* 标签样式 */
+.badge {
+  @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+}
+
+.badge-success {
+  @apply badge bg-success-100 text-success-700;
+}
+
+.badge-warning {
+  @apply badge bg-warning-100 text-warning-700;
+}
+
+.badge-error {
+  @apply badge bg-error-100 text-error-700;
+}
+
+.badge-info {
+  @apply badge bg-info-100 text-info-700;
+}
+
+.badge-gray {
+  @apply badge bg-gray-100 text-gray-700;
+}
+
+/* 导航样式 */
+.nav-item {
+  @apply flex items-center space-x-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200;
+}
+
+.nav-item-active {
+  @apply nav-item bg-primary-50 text-primary-700 border-r-2 border-primary-600;
+}
+
+.nav-item-inactive {
+  @apply nav-item text-gray-600 hover:text-gray-900 hover:bg-gray-50;
+}
+
+/* 表格样式 */
+.table-header {
+  @apply px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50;
+}
+
+.table-header-left {
+  @apply px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50;
+}
+
+.table-cell {
+  @apply px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center;
+}
+
+.table-cell-left {
+  @apply px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-left;
+}
+
+.table-row {
+  @apply hover:bg-gray-50 transition-colors duration-150;
+}
+
+/* 加载动画 */
+.spinner {
+  @apply animate-spin rounded-full border-2 border-gray-200 border-t-primary-600;
+}
+
+/* 空状态样式 */
+.empty-state {
+  @apply text-center py-12;
+}
+
+.empty-state-icon {
+  @apply mx-auto h-12 w-12 text-gray-400;
+}
+
+.empty-state-title {
+  @apply mt-4 text-lg font-medium text-gray-900;
+}
+
+.empty-state-description {
+  @apply mt-2 text-sm text-gray-500;
+}
+
+/* 过渡动画 */
+.fade-in {
+  @apply animate-fade-in;
+}
+
+.slide-up {
+  @apply animate-slide-up;
+}
+
+.scale-in {
+  @apply animate-scale-in;
+}
+
+/* 响应式工具类 */
+.container-responsive {
+  @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+}
+
+/* 搜索和操作区域布局 */
+.search-action-container {
+  @apply flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4;
+}
+
+.search-input-container {
+  @apply relative flex-1 min-w-0;
+  min-width: 280px;
+}
+
+.action-buttons-container {
+  @apply flex items-center space-x-2 flex-shrink-0;
+}
+
+/* 文本样式 */
+.text-heading-1 {
+  @apply text-3xl font-bold text-gray-900;
+}
+
+.text-heading-2 {
+  @apply text-2xl font-semibold text-gray-900;
+}
+
+.text-heading-3 {
+  @apply text-xl font-semibold text-gray-900;
+}
+
+.text-body {
+  @apply text-base text-gray-700;
+}
+
+.text-caption {
+  @apply text-sm text-gray-500;
+}
+
+/* 分隔线 */
+.divider {
+  @apply border-t border-gray-200;
+}
+
+/* 卡片网格布局 */
+.card-grid {
+  @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6;
+}
+
+/* 侧边栏样式 */
+.sidebar {
+  @apply w-64 bg-white border-r border-gray-200 h-screen fixed left-0 top-0 overflow-y-auto;
+}
+
+.sidebar-header {
+  @apply flex items-center space-x-3 px-6 py-6 border-b border-gray-200;
+}
+
+.sidebar-nav {
+  @apply px-3 py-4 space-y-1;
+}

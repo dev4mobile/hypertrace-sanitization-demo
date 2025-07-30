@@ -13,7 +13,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: create-drop
     show-sql: true
     properties:
       hibernate:
@@ -22,7 +22,7 @@ spring:
 
   sql:
     init:
-      mode: never
+      mode: always
 
   kafka:
     bootstrap-servers: localhost:9092
@@ -40,12 +40,4 @@ spring:
       com.example.hypertracedemo: DEBUG
       org.springframework.web: DEBUG
 
-# # Actuator 监控端点配置
-# management:
-#   endpoints:
-#     web:
-#       exposure:
-#         include: health,info,metrics,prometheus
-#   endpoint:
-#     health:
-#       show-details: always
+

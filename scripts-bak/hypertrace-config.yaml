@@ -1,0 +1,108 @@
+# Hypertrace Java Agent 配置文件
+# 参考：https://github.com/hypertrace/javaagent
+
+# 禁用所有数据库相关数据采集
+otel:
+  instrumentation:
+    jdbc:
+      enabled: false
+    jpa:
+      enabled: false
+    hibernate:
+      enabled: false
+    hikaricp:
+      enabled: false
+    jdbc-datasource:
+      enabled: false
+
+# # 数据捕获配置
+# data-capture:
+#   # 启用请求和响应体捕获
+#   request-body:
+#     enabled: true
+#     # 设置最大捕获大小（字节）
+#     max-size: 4096
+#   response-body:
+#     enabled: true
+#     max-size: 4096
+
+#   # 启用请求和响应头捕获
+#   request-headers:
+#     enabled: true
+#   response-headers:
+#     enabled: true
+
+#   # 启用消息体捕获（Kafka等消息系统）
+#   messaging:
+#     enabled: true
+#     message-body:
+#       enabled: true
+#       max-size: 8192  # 增加捕获大小
+#     message-headers:
+#       enabled: true
+
+#     # 增强消费者监控
+#     consumer:
+#       enabled: true
+#       capture-payload: true
+#       capture-headers: true
+
+#     # 增强生产者监控
+#     producer:
+#       enabled: true
+#       capture-payload: true
+#       capture-headers: true
+
+# # 导出配置
+# reporting:
+#   endpoint: http://clickstack:4317
+#   secure: false
+
+# # 过滤器配置
+# filters:
+#   # 可以配置自定义过滤器
+#   providers: []
+
+# # 日志配置
+# logging:
+#   level: INFO
+
+# # OpenTelemetry 配置扩展
+# otel:
+#   # 服务名称
+#   service:
+#     name: hypertrace-demo-app
+
+#   # 启用 Kafka 追踪
+#   instrumentation:
+#     kafka:
+#       enabled: true
+#     messaging:
+#       enabled: true
+#       experimental:
+#         receive-telemetry:
+#           enabled: true
+#         capture-payload:
+#           enabled: true
+
+    # 启用数据库追踪
+    # jdbc:
+    #   enabled: true
+    #   statement:
+    #     sanitizer:
+    #       enabled: false  # 禁用SQL净化以捕获完整查询
+
+    # 启用JPA/Hibernate追踪
+    # jpa:
+    #   enabled: true
+    # hibernate:
+    #   enabled: true
+
+    # # 启用SQL数据捕获
+    # sql:
+    #   enabled: true
+    #   experimental:
+    #     capture-statement:
+    #       enabled: true
+    #     capture-result-set:
+    #       enabled: true  # 捕获查询结果集

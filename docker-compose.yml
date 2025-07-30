@@ -13,68 +13,86 @@ services:
       - hypertrace-network
 
   # Prometheus - 监控指标收集
-  prometheus:
-    image: prom/prometheus:latest
-    ports:
-      - "9090:9090"
-    volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml
-    networks:
-      - hypertrace-network
+  # prometheus:
+  #   image: prom/prometheus:latest
+  #   ports:
+  #     - "9090:9090"
+  #   volumes:
+  #     - ./prometheus.yml:/etc/prometheus/prometheus.yml
+  #   networks:
+  #     - hypertrace-network
 
-  # Grafana - 可视化仪表板
-  grafana:
-    image: grafana/grafana:latest
-    ports:
-      - "3000:3000"
-    environment:
-      - GF_SECURITY_ADMIN_PASSWORD=admin
-    volumes:
-      - grafana-storage:/var/lib/grafana
-    networks:
-      - hypertrace-network
+  # # Grafana - 可视化仪表板
+  # grafana:
+  #   image: grafana/grafana:latest
+  #   ports:
+  #     - "3000:3000"
+  #   environment:
+  #     - GF_SECURITY_ADMIN_PASSWORD=admin
+  #   volumes:
+  #     - grafana-storage:/var/lib/grafana
+  #   networks:
+  #     - hypertrace-network
 
-  # Zookeeper - Kafka 协调服务
-  zookeeper:
-    image: confluentinc/cp-zookeeper:7.4.0
-    hostname: zookeeper
-    container_name: zookeeper
-    ports:
-      - "2181:2181"
-    environment:
-      ZOOKEEPER_CLIENT_PORT: 2181
-      ZOOKEEPER_TICK_TIME: 2000
-    networks:
-      - hypertrace-network
+  # clickstack:
+  #   image: docker.hyperdx.io/hyperdx/hyperdx-all-in-one
+  #   container_name: clickstack
+  #   environment:
+  #     FRONTEND_URL: http://localhost:16686
+  #     HYPERDX_API_KEY: Sw@123456
+  #     OTEL_SERVICE_NAME: 'hdx-oss-api'
+  #     # OTEL_AGENT_FEATURE_GATE_ARG: --feature-gates=clickhouse.json
+  #   ports:
+  #     - "4317:4317"
+  #     - "4318:4318"
+  #     - "16686:8080"
+  #   volumes:
+  #     - clickstack-db-data:/data/db
+  #     - clickstack-ch-data:/var/lib/clickhouse
+  #   networks:
+  #     - hypertrace-network
 
-  # Kafka - 消息代理
+  # Kafka - 消息代理 (KRaft 模式，无需 Zookeeper)
   kafka:
-    image: confluentinc/cp-kafka:7.4.4
+    image: confluentinc/cp-kafka:7.6.0
     hostname: kafka
     container_name: kafka
-    depends_on:
-      - zookeeper
-    ports:
-      - "9092:9092"
-      - "19092:19092"
     environment:
-      KAFKA_BROKER_ID: 1
-      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
-      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:29092,PLAINTEXT_HOST://0.0.0.0:9092
+      # KRaft 模式配置
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:29093
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
+
+      # 监听器配置
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:29092,CONTROLLER://0.0.0.0:29093,PLAINTEXT_HOST://0.0.0.0:9092
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+
+      # 日志和存储配置
+      KAFKA_LOG_DIRS: /var/lib/kafka/data
+      KAFKA_METADATA_LOG_SEGMENT_MS: 15000
+      KAFKA_METADATA_MAX_RETENTION_MS: 1200000
+      KAFKA_METADATA_LOG_MAX_RECORD_BYTES_BETWEEN_SNAPSHOTS: 2800
+
+      # 主题默认配置
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+
+      # JMX 配置
       KAFKA_JMX_PORT: 19092
       KAFKA_JMX_HOSTNAME: localhost
-      # 启用 JMX 监控 (暂时禁用)
-      # KAFKA_OPTS: "-javaagent:${JMX_AGENT_PATH:-/tmp/jmx_prometheus_javaagent.jar}=${JMX_AGENT_PORT:-8080}:${JMX_AGENT_CONFIG:-/tmp/kafka-2_0_0.yml}"
+
+      # Hypertrace Agent 配置
+      KAFKA_OPTS: >-
+        -javaagent:/opt/hypertrace/hypertrace-agent.jar -Dhypertrace.service.name=kafka-broker
     volumes:
       - kafka-data:/var/lib/kafka/data
-      # - ./agents/jmx_prometheus_javaagent.jar:/tmp/jmx_prometheus_javaagent.jar
-      # - ./agents/kafka-2_0_0.yml:/tmp/kafka-2_0_0.yml
+      - ./agents/hypertrace-agent-1.3.25.jar:/opt/hypertrace/hypertrace-agent.jar
     networks:
       - hypertrace-network
 
@@ -95,10 +113,8 @@ services:
 
   # Postgres - 关系型数据库
   postgres:
-    image: postgres:15-alpine
+    image: postgres:16-alpine
     container_name: postgres
-    ports:
-      - "5432:5432"
     environment:
       POSTGRES_DB: hypertrace
       POSTGRES_USER: postgres
@@ -107,28 +123,163 @@ services:
       - postgres-data:/var/lib/postgresql/data
     networks:
       - hypertrace-network
-  # hypertrace-demo-app:
-  #   build: .
-  #   ports:
-  #     - "8080:8080"
-  #   depends_on:
-  #     - postgres
-  #     - kafka
-  #   environment:
-  #     - OTEL_SERVICE_NAME=hypertrace-demo-app
-  #     - OTEL_EXPORTER_OTLP_TRACES_ENDPOINT=http://hypertrace-otel-collector:4317
-  #     - OTEL_METRICS_EXPORTER=none
-  #     - JAVA_TOOL_OPTIONS=-javaagent:/agent/hypertrace-agent.jar
-  #     - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/hypertrace
-  #     - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092
-  #   volumes:
-  #     - ./agent:/agent
+  # 脱敏配置服务 - PostgreSQL 数据库
+  sanitization-postgres:
+    image: postgres:16-alpine
+    container_name: sanitization-postgres
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=sanitization_config
+      - POSTGRES_USER=sanitization_user
+      - POSTGRES_PASSWORD=sanitization_pass_2024!
+      - POSTGRES_INITDB_ARGS=--encoding=UTF-8
+    volumes:
+      - sanitization-postgres-data:/var/lib/postgresql/data
+      - ./sanitization-config-service/database/init-docker.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+    networks:
+      - hypertrace-network
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: "0.5"
+        reservations:
+          memory: 256M
+          cpus: "0.25"
+    healthcheck:
+      test:
+        ["CMD-SHELL", "pg_isready -U sanitization_user -d sanitization_config"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+  # 脱敏配置服务 - 后端API
+  sanitization-backend:
+    build:
+      context: ./sanitization-config-service/server
+      dockerfile: Dockerfile
+    container_name: sanitization-backend
+    ports:
+      - "3001:3001"
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      # 数据库配置
+      - DB_HOST=sanitization-postgres
+      - DB_PORT=5432
+      - DB_NAME=sanitization_config
+      - DB_USER=sanitization_user
+      - DB_PASSWORD=sanitization_pass_2024!
+      - DB_SSL=false
+      # 连接池配置
+      - DB_POOL_MAX=10
+      - DB_POOL_MIN=2
+      - DB_IDLE_TIMEOUT=30000
+      - DB_CONNECTION_TIMEOUT=5000
+    depends_on:
+      sanitization-postgres:
+        condition: service_healthy
+    networks:
+      - hypertrace-network
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: "0.3"
+        reservations:
+          memory: 128M
+          cpus: "0.1"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # 脱敏配置服务 - 前端管理界面
+  sanitization-frontend:
+    build:
+      context: ./sanitization-config-service
+      dockerfile: Dockerfile
+    container_name: sanitization-frontend
+    ports:
+      - "3000:8080"
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - REACT_APP_VERSION=1.0.0
+      - REACT_APP_API_URL=http://localhost:3001
+    depends_on:
+      sanitization-backend:
+        condition: service_healthy
+    networks:
+      - hypertrace-network
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: "0.5"
+        reservations:
+          memory: 256M
+          cpus: "0.25"
+
+  # Spring Boot 应用 - Hypertrace Demo
+  hypertrace-demo-app:
+    build: .
+    container_name: hypertrace-demo-app
+    ports:
+      - "10020:8080"
+    depends_on:
+      - postgres
+      - kafka
+      - jaeger
+      - sanitization-backend
+    hostname: hypertrace-demo-app
+    environment:
+      # Spring Boot 配置
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/hypertrace
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=password
+      - SPRING_KAFKA_BOOTSTRAP-SERVERS=kafka:29092
+      - HT_SANITIZATION_CONFIG_ENDPOINT=http://sanitization-backend:3001/api/sanitization/rules
+      - HT_SANITIZATION_CONFIG_REFRESH_INTERVAL=20
+
+      # Hypertrace Agent 配置
+      - JAVA_OPTS=-javaagent:/opt/hypertrace/hypertrace-agent-1.3.25.jar -Dotel.instrumentation.kafka.enabled=true -Dotel.instrumentation.kafka.capture-message-key=true
+
+      # OpenTelemetry 配置
+      - OTEL_SERVICE_NAME=hypertrace-demo-app
+      - OTEL_EXPORTER_OTLP_TRACES_ENDPOINT=http://jaeger:4317
+      - OTEL_EXPORTER_OTLP_HEADERS=authorization=5edae162-cec0-4950-8151-75b170d7c0a8
+      - OTEL_METRICS_EXPORTER=none
+      - OTEL_TRACES_EXPORTER=otlp
+      - OTEL_LOGS_EXPORTER=none
+
+      # 通过环境变量禁用所有数据库相关 instrumentation
+      - OTEL_INSTRUMENTATION_JDBC_ENABLED=false
+      - OTEL_INSTRUMENTATION_JPA_ENABLED=false
+      - OTEL_INSTRUMENTATION_HIBERNATE_ENABLED=false
+      - OTEL_INSTRUMENTATION_HIKARICP_ENABLED=false
+      - OTEL_INSTRUMENTATION_JDBC_DATASOURCE_ENABLED=false
+
+      # https://github.com/hypertrace/agent-config/blob/main/ENV_VARS.md
+      - HT_TELEMETRY_METRICS_ENABLED=false
+
+    volumes:
+      - ./agents/hypertrace-agent-1.3.25.jar:/opt/hypertrace/hypertrace-agent-1.3.25.jar
+    networks:
+      - hypertrace-network
+    restart: unless-stopped
 
 volumes:
-  grafana-storage:
   kafka-data:
   postgres-data:
-
+  clickstack-ch-data:
+  clickstack-db-data:
+  sanitization-postgres-data:
 
 networks:
   hypertrace-network:

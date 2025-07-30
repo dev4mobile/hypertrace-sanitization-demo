@@ -1,0 +1,63 @@
+{
+  "name": "sanitization-config-service",
+  "version": "1.0.0",
+  "description": "A full-stack data sanitization rules management system with React frontend and Node.js backend",
+  "private": true,
+  "homepage": ".",
+  "dependencies": {
+    "@types/node": "^22.10.5",
+    "@types/react": "^19.1.8",
+    "@types/react-dom": "^19.1.6",
+    "lucide-react": "^0.469.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-hot-toast": "^2.5.2",
+    "react-scripts": "5.0.1",
+    "typescript": "^4.9.5"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.0",
+    "autoprefixer": "^10.4.16",
+    "postcss": "^8.4.32"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject",
+    "serve": "npx serve -s build -l 3000",
+    "dev": "./start-full-stack.sh"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "engines": {
+    "node": ">=22.0.0",
+    "npm": ">=9.0.0"
+  },
+  "keywords": [
+    "data-sanitization",
+    "privacy",
+    "security",
+    "frontend",
+    "react",
+    "typescript"
+  ],
+  "author": "Development Team",
+  "license": "MIT"
+}
